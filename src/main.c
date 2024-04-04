@@ -15,6 +15,7 @@
 #include <curl/curl.h>
 
 #include <param/param.h>
+#include <param/param_queue.h>
 #ifdef PARAM_HAVE_COMMANDS
 #include <param/param_commands.h>
 #endif
