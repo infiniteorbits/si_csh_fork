@@ -32,6 +32,69 @@ typedef struct local_epoch_s
 } local_epoch_t;
 static local_epoch_t hks = {0};
 
+typedef struct timesync_nodes_s
+{
+	int count;
+	uint16_t node[MAX_HKS];
+	uint16_t paramid[MAX_HKS];
+} timesync_nodes_t; 
+static timesync_nodes_t timesync_nodes = {0};
+
+void hk_set_utcparam(unsigned int node, unsigned int paramid) {
+
+	// update existing
+	for (size_t i = 0; i < timesync_nodes.count; i++){
+		if(timesync_nodes.node[i] == node){
+			timesync_nodes.node[i] = node;
+			timesync_nodes.paramid[i] = paramid;
+			printf("Updating HK UTC parameter from node %u\n", node);
+			return;
+		}
+	}
+	timesync_nodes.node[timesync_nodes.count] = node;
+	timesync_nodes.paramid[timesync_nodes.count++] = paramid;
+	
+	printf("Adding HK UTC parameter from node %u\n", node);
+}
+
+static int hk_utcparam(struct slash *slash) {
+
+	optparse_t * parser = optparse_new("hk utcparam node:paramid", "Reference to parameter containing UTC time for automatic timesync");
+	optparse_add_help(parser);
+	int argi = optparse_parse(parser, slash->argc - 1, (const char **) slash->argv + 1);
+
+	if (slash->argc < 2) {
+		printf("Param ID is missing\n");
+		optparse_del(parser);
+		return SLASH_EINVAL;
+	}
+	argi++;
+
+	char* semicolon = strchr(slash->argv[argi], ':');
+
+	unsigned int node = slash_dfl_node;
+	if (semicolon > slash->argv[argi]) {
+		*semicolon = '\0';
+		node = atoi(slash->argv[argi]);
+	} else {
+		/* Node is not included, so we fake a semicolon before the string */
+		semicolon = slash->argv[argi]-1;
+	}
+	param_t *utcparam = param_list_find_name(node, semicolon+1);
+
+	if (utcparam == NULL) {
+		printf("Parameter is not known by CSH\n");
+		optparse_del(parser);
+		return SLASH_EINVAL;
+	}
+
+	hk_set_utcparam(node, utcparam->id);
+
+	return SLASH_SUCCESS;
+}
+slash_command_sub(hk, utcparam, hk_utcparam, NULL, NULL);
+
+
 void hk_set_epoch(time_t epoch, uint16_t node) {
 
 	// update existing
@@ -85,8 +148,8 @@ slash_command_sub(hk, timeoffset, hk_timeoffset, NULL, NULL);
 
 bool hk_get_epoch(time_t* local_epoch, uint16_t node) {
 
-    for (int i = 0; i < hks.count; i++) {
-        if (node == hks.node[i]) {
+	for (int i = 0; i < hks.count; i++) {
+		if (node == hks.node[i]) {
 			*local_epoch = hks.local_epoch[i];
 			return true;
         }
@@ -137,6 +200,14 @@ bool hk_param_sniffer(csp_packet_t * packet) {
 				printf("HK: Param timestamp is missing for %u:%s, logging is aborted\n", *(param->node), param->name);
 				break;
 			}
+
+			for (size_t i = 0; i < timesync_nodes.count; i++){
+				if(timesync_nodes.node[i] == node && timesync_nodes.paramid[i] == param->id){
+					local_epoch = param_get_uint32(param) - timestamp;
+					hk_set_epoch(local_epoch, packet->id.src);
+				}
+			}
+
 			*param->timestamp += local_epoch;
 			param_sniffer_log(NULL, &queue, param, offset, &reader, *param->timestamp);
 		} else {
