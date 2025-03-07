@@ -102,6 +102,16 @@ void hk_set_epoch(time_t epoch, uint16_t node, bool auto_sync) {
 	// update existing
 	for (size_t i = 0; i < hks.count; i++) {
 		if (hks.node[i] == node) {
+
+			if (auto_sync && hks.local_epoch[i] - epoch > 86400) {
+				char time[32];
+				strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", gmtime(&epoch));
+				char time_current[32];
+				strftime(time_current, sizeof(time_current), "%Y-%m-%d %H:%M:%S", gmtime(&hks.local_epoch[i]));
+				printf("Skipping possible invalid EPOCH %s, current EPOCH for HK node %u is %s\n", time, node, time_current);
+				return;
+			}
+
 			if (labs(hks.local_epoch[i] - epoch) > 5 || !auto_sync) {
 				// get unix time to string time
 				char time[32];
