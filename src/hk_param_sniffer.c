@@ -200,7 +200,7 @@ bool hk_param_sniffer(csp_packet_t * packet) {
 
 	mpack_reader_t reader;
 	mpack_reader_init_data(&reader, queue.buffer, queue.used);
-	bool epoch_notfound_warning = false; // Only print this warning once
+	static bool epoch_notfound_warning = false; // Only print this warning once
 	while (reader.data < reader.end) {
 		int id, node, offset = -1;
 		long unsigned int timestamp = 0;
