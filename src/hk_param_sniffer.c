@@ -102,7 +102,7 @@ void hk_set_epoch(time_t epoch, uint16_t node, bool auto_sync) {
 	// update existing
 	for (size_t i = 0; i < hks.count; i++) {
 		if (hks.node[i] == node) {
-			if (labs(hks.local_epoch[i] - epoch) > 5 || auto_sync) {
+			if (labs(hks.local_epoch[i] - epoch) > 5 || !auto_sync) {
 				// get unix time to string time
 				char time[32];
 				strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", gmtime(&epoch));
