@@ -99,7 +99,17 @@ slash_command_sub(hk, utcparam, hk_utcparam, NULL, NULL);
 
 void hk_set_epoch(time_t epoch, uint16_t node, bool auto_sync) {
 
-	// update existing
+	time_t current_time;
+	time(&current_time);
+
+	/* 1577833200: Jan 1st 2020 */
+	if (epoch > current_time || epoch < 1577833200) {
+		char time[32];
+		strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", gmtime(&epoch));
+		printf("Illegal EPOCH %u (%s) received\n", current_time, time);
+	}
+
+	/* update existing */
 	for (size_t i = 0; i < hks.count; i++) {
 		if (hks.node[i] == node) {
 
@@ -113,7 +123,7 @@ void hk_set_epoch(time_t epoch, uint16_t node, bool auto_sync) {
 			}
 
 			if (labs(hks.local_epoch[i] - epoch) > 5 || !auto_sync) {
-				// get unix time to string time
+				/* get unix time to string time */
 				char time[32];
 				strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", gmtime(&epoch));
 				printf("Updating HK node %u EPOCH by %ld sec to %s\n", node, hks.local_epoch[i] - epoch, time);
