@@ -106,7 +106,7 @@ void hk_set_epoch(time_t epoch, uint16_t node, bool auto_sync) {
 	if (epoch > current_time || epoch < 1577833200) {
 		char time[32];
 		strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", gmtime(&epoch));
-		printf("Illegal EPOCH %u (%s) received\n", current_time, time);
+		printf("Illegal EPOCH %lu (%s) received\n", current_time, time);
 	}
 
 	/* update existing */
@@ -122,7 +122,7 @@ void hk_set_epoch(time_t epoch, uint16_t node, bool auto_sync) {
 				return;
 			}
 
-			if (labs(hks.local_epoch[i] - epoch) > 5 || !auto_sync) {
+			if (labs(hks.local_epoch[i] - epoch) > 1 || !auto_sync) {
 				/* get unix time to string time */
 				char time[32];
 				strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", gmtime(&epoch));
