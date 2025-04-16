@@ -608,7 +608,8 @@
 		 return SLASH_EINVAL;
 	 }
 
-	 *param->timestamp = 0; /* Reset parameter timestamp before adding to queue, to avoid serializing it. */
+	 param->timestamp->tv_sec = 0; /* Reset parameter timestamp before adding to queue, to avoid serializing it. */
+	 param->timestamp->tv_nsec = 0;
 	 int expected_value_amount = 0;
 
 	 // If param is of type data or string we only want to set on a single offset, that being -1.
@@ -891,7 +892,8 @@
 			 return SLASH_EINVAL;
 		 }
 		 /* clear param timestamp so we dont set timestamp flag when serialized*/
-		 *param->timestamp = 0;
+		 param->timestamp->tv_sec = 0;
+		 param->timestamp->tv_nsec = 0;
 
 		 if (param_queue_add(&param_queue, param, offset, valuebuf) < 0)
 			 printf("Queue full\n");
