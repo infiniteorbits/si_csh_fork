@@ -50,8 +50,9 @@ int main(int argc, char **argv) {
 	csp_conf.model = "linux";
 	csp_init();
 
-    csp_iface_t * can_if = csp_can_socketcan_init(can_dev, 0, 1000000, true);
-    if (can_if == NULL) {
+	csp_iface_t * can_if;
+    int res = csp_can_socketcan_open_and_add_interface(can_dev, NULL, 1, 8, 1, 1000000, false, &can_if);
+    if (res < 0) {
         printf("failed to add CAN interface [%s]\n", can_dev);
     }
 

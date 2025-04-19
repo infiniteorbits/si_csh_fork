@@ -215,15 +215,13 @@ static int csp_ifadd_zmq_cmd(struct slash *slash) {
     }
 
     csp_iface_t * iface;
-    int error = csp_zmqhub_init_filter2((const char *) name, server, addr, mask, promisc, &iface, sec_key, subport, pubport);
+    int error = csp_zmqhub_init_filter2((const char *) name, server, addr, mask, 1, promisc, &iface, sec_key, subport, pubport);
     if (error != CSP_ERR_NONE) {
         csp_print("Failed to add zmq interface [%s], error: %d\n", server, error);
         optparse_del(parser);
         return SLASH_EINVAL;
     }
     iface->is_default = dfl;
-    iface->addr = addr;
-	iface->netmask = mask;
 
     if (sec_key != NULL) {
         free(sec_key);
@@ -347,7 +345,7 @@ static int csp_ifadd_can_cmd(struct slash *slash) {
 
     csp_iface_t * iface;
     
-    int error = csp_can_socketcan_open_and_add_interface(device, name, addr, baud, promisc, &iface);
+    int error = csp_can_socketcan_open_and_add_interface(device, name, addr, mask, 1, baud, promisc, &iface);
     if (error != CSP_ERR_NONE) {
         csp_print("failed to add CAN interface [%s], error: %d\n", device, error);
         optparse_del(parser);
@@ -355,8 +353,6 @@ static int csp_ifadd_can_cmd(struct slash *slash) {
     }
 
     iface->is_default = dfl;
-    iface->addr = addr;
-	iface->netmask = mask;
 
     optparse_del(parser);
 	return SLASH_SUCCESS;
@@ -402,7 +398,6 @@ static int csp_ifadd_eth_cmd(struct slash *slash) {
     snprintf(name, CSP_IFLIST_NAME_MAX, "ETH%u", ifidx++);
     const char * device = "e";
    
-    int promisc = 0;
     int mask = 8;
     int dfl = 0;
     int mtu = 1200;
@@ -410,7 +405,6 @@ static int csp_ifadd_eth_cmd(struct slash *slash) {
     optparse_t * parser = optparse_new("csp add eth", "<addr>");
     optparse_add_help(parser);
     optparse_add_string(parser, 'e', "device", "STR", (char **)&device, "Ethernet device name or name prefix (defaults to enp)");
-    optparse_add_set(parser, 'p', "promisc", 1, &promisc, "Promiscous Mode");
     optparse_add_int(parser, 'm', "mask", "NUM", 0, &mask, "Netmask (defaults to 8)");
     optparse_add_set(parser, 'd', "default", 1, &dfl, "Set as default");
     optparse_add_int(parser, 'b', "mtu", "NUM", 0, &mtu, "MTU in bytes (default 1200)");
@@ -445,7 +439,7 @@ static int csp_ifadd_eth_cmd(struct slash *slash) {
     csp_iface_t * iface = NULL;
 
     // const char * device, const char * ifname, int mtu, unsigned int node_id, csp_iface_t ** iface, bool promisc
-    int error = csp_eth_init(device, name, mtu, addr, promisc == 1, &iface);
+    int error = csp_eth_init(device, name, mtu, addr, &iface);
     if (error != CSP_ERR_NONE) {
         csp_print("Failed to add ethernet interface [%s], error: %d\n", device, error);
         optparse_del(parser);
