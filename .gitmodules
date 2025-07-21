@@ -1,15 +1,16 @@
 [submodule "lib/libcsp"]
   path = lib/csp
-  url = https://github.com/spaceinventor/libcsp
-  branch = master     
+  url = git@github.com:infiniteorbits/si_libcsp_fork.git
+  branch = csh-v2.8     
 [submodule "lib/libparam"]
   path = lib/param
-  url = https://github.com/spaceinventor/libparam
-  branch = master
+  url = git@github.com:infiniteorbits/si_libparam_fork.git
+  branch = csh-v2.8
 [submodule "lib/slash"]
   path = lib/slash
-  url = https://github.com/spaceinventor/slash
-  branch = master
+  url = git@github.com:infiniteorbits/si_slash_fork.git
+  branch = csh-v2.8
 [submodule "lib/apm"]
 	path = lib/apm
-	url = https://github.com/spaceinventor/libapm_csh
+	url = git@github.com:infiniteorbits/si_libapm_fork.git
+  branch = csh-v2.8
